@@ -9,4 +9,4 @@ console.log(DB_HOST)
 const mongoose = require('mongoose');
 
 
-mongoose.connect(DB_HOST).then(() => console.log('DB Connected')).catch((error) => console.error(err.message));
+mongoose.connect(DB_HOST).then(() => console.log('Database connection successful')).catch((error) => console.error(err.message));
