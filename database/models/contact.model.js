@@ -22,7 +22,7 @@ const contactSchema = mongoose.Schema(
   { versionKey: false }
 );
 
-const ContactModel = mongoose.model('contact', contactSchema);
+const ContactModel = mongoose.model('Contact', contactSchema);
 
 module.exports = {
   ContactModel,
