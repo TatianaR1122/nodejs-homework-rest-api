@@ -1,5 +1,8 @@
 ## GoIT Node.js Course Template Homework
 
+QS6BXnC7LrDkeTTT
+ZaQSXleilopI30iy
+
 Виконайте форк цього репозиторію для виконання домашніх завдань (2-6)
 Форк створить репозиторій на вашому http://github.com
 
