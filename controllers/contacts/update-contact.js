@@ -1,5 +1,5 @@
-// const contacts = require('../../models/contacts');
 const { ContactModel } = require('../../database/models');
+const { createHttpException, mapContactOutput } = require('../../services');
 const Joi = require('joi');
 
 const addSchema = Joi.object({
@@ -9,51 +9,32 @@ const addSchema = Joi.object({
   favorite: Joi.boolean(),
 });
 
-async function updateById(req, res, next) {
-  try {
-    const { contactId } = req.params;
-    // const { name, email, phone } = req.body;
-    // const { error } = addSchema.validate({ name, email, phone });
-    const { name, email, phone, favorite } = req.body;
-    const { error } = addSchema.validate({ name, email, phone, favorite });
-    if (error) {
-      return res.status(400).json({
-        message: 'missing fields',
-      });
-    }
-    // const result = await contacts.updateContact(contactId, { name, email, phone });
-    const result = await ContactModel.findByIdAndUpdate(
-      contactId,
-      {
-        name,
-        email,
-        phone,
-        favorite,
-      },
-      { new: true }
-    ).catch(error => {
-      const err = Error(error.message);
-      err.code = 400;
-      throw err;
-    });
-    if (result === null) {
-      return res.status(404).json({
-        message: 'Not found',
-      });
-    }
-    // res.status(200).json(result);
-    const { _id, ...rest } = result.toObject();
-
-    const mappedContact = {
-      id: _id,
-      ...rest,
-    };
-
-    res.status(200).json(mappedContact);
-  } catch (error) {
-    next(error);
+const updateById = async (req, res, next) => {
+  const { contactId } = req.params;
+  const { name, email, phone, favorite } = req.body;
+  const { error } = addSchema.validate({ name, email, phone, favorite });
+  if (error) {
+    throw createHttpException('missing fields', 400);
   }
-}
+  const result = await ContactModel.findByIdAndUpdate(
+    contactId,
+    {
+      name,
+      email,
+      phone,
+      favorite,
+    },
+    { new: true }
+  ).catch(error => {
+    throw createHttpException(400, error.message);
+  });
+  if (result === null) {
+    throw createHttpException(404, 'Not found');
+  }
+  const mappedContact = mapContactOutput(result);
+
+  res.status(200).json(mappedContact);
+};
 
 module.exports = {
   updateById,

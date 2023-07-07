@@ -1,4 +1,5 @@
 const { ContactModel } = require('../../database/models');
+const { createHttpException, mapContactOutput } = require('../../services');
 const Joi = require('joi');
 
 const addSchema = Joi.object({
@@ -9,26 +10,16 @@ const addSchema = Joi.object({
 });
 
 async function addContacts(req, res, next) {
-  try {
-    const { name, email, phone, favorite } = req.body;
-    const { error } = addSchema.validate({ name, email, phone, favorite });
-    if (error) {
-      return res.status(400).json({
-        message: 'missing required name field',
-      });
-    }
-    const result = await ContactModel.create({ name, email, phone, favorite });
-    const { _id, ...rest } = result.toObject();
-
-    const mappedContact = {
-      id: _id,
-      ...rest,
-    };
-
-    res.status(200).json(mappedContact);
-  } catch (error) {
-    next(error);
+  const user = req.user;
+  const { name, email, phone, favorite } = req.body;
+  const { error } = addSchema.validate({ name, email, phone, favorite });
+  if (error) {
+    throw createHttpException(400, 'missing required name field');
   }
+  const result = await ContactModel.create({ name, email, phone, favorite, owner: user });
+    const mappedContact = mapContactOutput(result);
+
+  res.status(201).json(mappedContact);
 }
 
 module.exports = {
