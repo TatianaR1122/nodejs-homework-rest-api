@@ -1,34 +1,20 @@
-// const contacts = require('../../models/contacts');
 const { ContactModel } = require('../../database/models');
+const { createHttpException, mapContactOutput } = require('../../services');
 
-async function getById(req, res, next) {
-  try {
+const getById = async(req, res, next) => {
     const { contactId } = req.params;
-    // const result = await contacts.getById(contactId);
     const result = await ContactModel.findById(contactId).catch(error => {
-      const err = Error(error.message);
-      err.code = 400;
-      throw err;
-    });
+    throw createHttpException(error.message, 400);
+  });
 
     if (!result) {
-      return res.status(404).json({
-        message: 'Not found',
-      });
-    }
-    // res.status(200).json(result);
-    const { _id, ...rest } = result.toObject();
-
-    const mappedContact = {
-      id: _id,
-      ...rest,
-    };
-
-    res.status(200).json(mappedContact);
-  } catch (error) {
-    next(error);
+    throw createHttpException(404, 'Not found');
   }
-}
+
+    const mappedContact = mapContactOutput(result);
+    res.status(200).json(mappedContact);
+};
+
 
 module.exports = {
   getById,
